@@ -36,7 +36,7 @@ header() {
 }
 
 echo "=================================================="
-echo "  Freedom PREFLIGHT — the night-before check"
+echo "  Supersuit PREFLIGHT — the night-before check"
 echo "  Read-only: nothing is installed or changed."
 echo "=================================================="
 
