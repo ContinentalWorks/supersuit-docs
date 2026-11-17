@@ -225,7 +225,7 @@ elseif ($warns -gt 0) { $Verdict = "Ready, with $warns item" + $(if ($warns -eq 
 else { $Verdict = 'Ready' }
 
 $ItRequest = @'
-I'm setting up Supersuit, an AI assistant that runs on Claude Code, on my PC. The installer needs Windows Package Manager (winget) and PowerShell scripts, and this PC's company policy blocks them.
+I'm setting up Supersuit on my PC. It is personal AI software that works through agentic coding tools, Claude Code by default. The installer needs Windows Package Manager (winget) and PowerShell scripts, and this PC's company policy blocks them.
 
 Option A (preferred): allow winget (Microsoft.DesktopAppInstaller_8wekyb3d8bbwe) and PowerShell scripts to run for my user account. The installer uses winget for these official packages: Node.js LTS (OpenJS.NodeJS.LTS), Git for Windows (Git.Git), jq (jqlang.jq), Python 3.12 per-user (Python.Python.3.12) and Claude Code (Anthropic.ClaudeCode).
 
