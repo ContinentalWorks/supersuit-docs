@@ -24,13 +24,16 @@ param([switch]$DryRun, [switch]$NoLaunch, [switch]$PrintHandoff)
 
 $ErrorActionPreference = "Stop"
 
-$InstallSkillUrl = if ($env:FREEDOM_INSTALL_SKILL_URL) { $env:FREEDOM_INSTALL_SKILL_URL } else { "https://wiki.supersuit.co/skills/install-freedom-windows/SKILL.md" }
+# SUPERSUIT_INSTALL_SKILL_URL first (supersuit-dev#3353); the old FREEDOM_ name still works for one release,
+# for setup pages and installers already out. Remove the second half after 8.6.
+$InstallSkillOverride = if ($env:SUPERSUIT_INSTALL_SKILL_URL) { $env:SUPERSUIT_INSTALL_SKILL_URL } else { $env:FREEDOM_INSTALL_SKILL_URL }
+$InstallSkillUrl = if ($InstallSkillOverride) { $InstallSkillOverride } else { "https://wiki.supersuit.co/skills/install-freedom-windows/SKILL.md" }
 # Never a URL that redirects: Windows PowerShell 5.1's Invoke-WebRequest does not follow a 308 (curl
 # on the Mac does; measured 2026-10-10). On 2026-10-17 getfreedom.wiki began answering 308 to
 # wiki.supersuit.co and every Windows install died here, so the default is the host that serves the
 # file, the old URL is a fallback, and a Location header on any failure is followed by hand.
 $InstallSkillUrls = @($InstallSkillUrl)
-if (-not $env:FREEDOM_INSTALL_SKILL_URL) { $InstallSkillUrls += "https://www.getfreedom.wiki/skills/install-freedom-windows/SKILL.md" }
+if (-not $InstallSkillOverride) { $InstallSkillUrls += "https://www.getfreedom.wiki/skills/install-freedom-windows/SKILL.md" }
 $InstallSkillFile = Join-Path $HOME ".supersuit-install.md"
 $LogFile = Join-Path $HOME ".freedom-setup.log"
 
@@ -468,7 +471,8 @@ if ($DryRun) {
   if (-not $fetched) { Fail "could not fetch the install skill from $($InstallSkillUrls -join ' or ') ($lastError)" }
   $InstallSkillUrl = $fetched
   $head = (Get-Content $InstallSkillFile -TotalCount 20) -join "`n"
-  if ($head -notmatch "install-freedom") {
+  # Either name: the wiki serves install-supersuit-windows once supersuit-dev#3353 lands there.
+  if ($head -notmatch "install-(freedom|supersuit)") {
     Remove-Item $InstallSkillFile -ErrorAction SilentlyContinue
     Fail "the URL returned something that is not the install skill: $InstallSkillUrl"
   }

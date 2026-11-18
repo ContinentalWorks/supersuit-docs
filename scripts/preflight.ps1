@@ -54,6 +54,21 @@ function Read-Winget {
   return 'ok'
 }
 
+# The PC's own processor. On a Windows-on-Arm PC an emulated x64 PowerShell is told
+# PROCESSOR_ARCHITECTURE is AMD64, so the process's variable calls an Arm PC x86_64 (#1099). The SYSTEM
+# environment in the registry holds the machine's own value (ARM64), whatever the reading process is;
+# the process's variable is the fallback only when the registry cannot be read.
+function Read-Arch {
+  try {
+    $native = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -ErrorAction Stop).PROCESSOR_ARCHITECTURE
+    if ($native) {
+      if ($native -ne $env:PROCESSOR_ARCHITECTURE) { return "$native, this PowerShell runs as $($env:PROCESSOR_ARCHITECTURE)" }
+      return "$native"
+    }
+  } catch {}
+  return $env:PROCESSOR_ARCHITECTURE
+}
+
 function Read-Facts {
   $os = 'Windows'
   try {
@@ -135,7 +150,7 @@ function Read-Facts {
   } catch {}
 
   return [pscustomobject]@{
-    os = $os; arch = $env:PROCESSOR_ARCHITECTURE; ramGB = $ram; diskFreeGB = $disk
+    os = $os; arch = (Read-Arch); ramGB = $ram; diskFreeGB = $disk
     winget = (Read-Winget); entraJoined = [bool]$entra; domainJoined = [bool]$domain; intune = $intune; elevationTools = $tools
     node = (Tool-Version 'node' @('--version')); git = $git; gitBash = $gitBash; python = $python
     jq = (Tool-Version 'jq' @('--version')); claude = (Tool-Version 'claude' @('--version'))
